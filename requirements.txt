@@ -1,0 +1,5 @@
+pyforest == 1.1.0
+SimpleITK == 2.1.1
+# numpy == 1.21.4
+# pyradiomics == 3.0.1
+opencv-python == 4.5.4.60 
