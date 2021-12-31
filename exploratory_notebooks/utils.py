@@ -5,10 +5,8 @@ import skimage
 
 import numpy as np
 
-from numba import vectorize, jit
-from scipy import sparse
-from scipy import signal
-from scipy.stats import entropy
+from numba import jit
+from scipy import signal, sparse, stats
 from skimage.morphology._util import _raveled_offsets_and_distances
 from skimage.util._map_array import map_array
 from skimage.graph._graph import _weighted_abs_diff
@@ -259,7 +257,7 @@ def Neutrsophic_Image(img: np.ndarray, inversion: bool = False):
     lmv = mean_filter(img)
     lmv_min = np.min(lmv)
     lmv_max = np.max(lmv)
-    normalizer_func = vectorize(normalizer)
+    normalizer_func = np.vectorize(normalizer)
     T = normalizer_func(lmv, lmv_min, lmv_max)
     if inversion:
         T = 1 - T
@@ -311,7 +309,7 @@ def guo2009_ns_transform(
     mean_delta = np.absolute(alphaT - alpha_mean_T)
     mean_delta_min = np.min(mean_delta)
     mean_delta_max = np.max(mean_delta)
-    normalizer_func = vectorize(normalizer)
+    normalizer_func = np.vectorize(normalizer)
     alphaI = normalizer_func(mean_delta, mean_delta_min, mean_delta_max)
 
     # beta enhaced T
@@ -403,7 +401,7 @@ def rashno_ns_mapper(g: np.ndarray):
 
         # Step 9
         _, counts = np.unique(I_im, return_counts=True)
-        I_entropy = entropy(counts)
+        I_entropy = stats.entropy(counts)
 
         if np.abs(I_entropy - entropy) > 0.001:
             entropy = I_entropy
@@ -425,7 +423,7 @@ def edge_func_ilm(
         weights (np.ndarray): Weights of all the edges.
     """
     weights = (4*max_g - values0 - values1 + 2*mean_r*max_g + 1e-5)
-    normalizer_func = vectorize(normalizer)
+    normalizer_func = np.vectorize(normalizer)
     weights = normalizer_func(weights, np.min(weights), np.max(weights))
     weights = weights * 1e10 + 1e-5
     return weights
@@ -473,7 +471,7 @@ def get_ilm_line(g: np.ndarray, T: np.ndarray, r_window: int = 50):
     R = scipy.signal.convolve2d(
         g, kernel_r, mode='full', boundary='symm'
     )[:-r_window, :]
-    normalizer_func = vectorize(normalizer)
+    normalizer_func = np.vectorize(normalizer)
     R = normalizer_func(R, np.min(R), np.max(R))
 
     # Padd the gradient image with intial and last columns of high values of
@@ -548,7 +546,7 @@ def edge_func_rpe(
     D = get_distances_from_ilm_line(indices0, ilm_image, shape)
     gradient_term = 4 * max_g - values0 - values1
     weights = 8*gradient_term - 2*mean_u*max_g - D*4e-3 + 2*(1 - mean_r)*max_g
-    normalizer_func = vectorize(normalizer)
+    normalizer_func = np.vectorize(normalizer)
     weights = normalizer_func(weights, np.min(weights), np.max(weights))
     weights = weights * 1e10 + 1e-5
     return weights
@@ -590,7 +588,7 @@ def get_rpe_line(
     R = scipy.signal.convolve2d(
         g, kernel, mode='full', boundary='symm'
     )[:-r_window, :]
-    normalizer_func = vectorize(normalizer)
+    normalizer_func = np.vectorize(normalizer)
     R = normalizer_func(R, np.min(R), np.max(R))
     # Padd the matix R with intial and last columns of penalties of 1 which
     # are going to turn zero after invertion.
@@ -864,7 +862,7 @@ def regional_term(
         R1p_obj (np.ndarray): Object R1p regional weights
         R1p_bkg (np.ndarray): Background R1p regional weights
     """
-    R1p_func = vectorize(R1p)
+    R1p_func = np.vectorize(R1p)
     # Get means of seeds
     mean_obj = np.mean(img[obj_seeds[:, 0], obj_seeds[:, 1]])
     mean_bkg = np.mean(img[bkg_seeds[:, 0], bkg_seeds[:, 1]])
