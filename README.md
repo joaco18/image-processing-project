@@ -1,4 +1,4 @@
-# SD-OCT fluid segmentation
+# SD-OCT fluid segmentation with graph cuts
 
 ![alt text](https://github.com/joaco18/rashno-2017-fluid-oct/blob/main/summary.png)
 ### This repository offers an implementation of Rashno et al. 2017 paper:
